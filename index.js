@@ -15,10 +15,8 @@ app.use(express.static(path.resolve('./public')))
 app.use(express.urlencoded({ extended: false }))
 app.use('/', checkForAuthenticationCookie('token'),appRouter)
 
-// app.use(checkForAuthenticationCookie('token'))
 
 connect()
-
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`)

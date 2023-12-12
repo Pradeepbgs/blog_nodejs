@@ -1,5 +1,5 @@
 // import exp from "constants";
-import mongoose from "mongoose";
+import mongoose,{Schema} from "mongoose";
 import { createHmac, randomBytes} from 'crypto'
 import { createToken } from "../services/authenctication.js";
 
@@ -20,23 +20,24 @@ const userSchema = new  mongoose.Schema({
         type: String,
         required: true,
     },
+    posts: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Blog',
+    }],
     role:{
         type: String,
         enum: ['user', 'admin'],
         default: 'user',
     },
-    posts: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Blog',
-    }],
+    
 }, {timestamps: true})
 
-userSchema.pre('save',  function (next) {
+userSchema.pre('save',  async function (next) {
     const user = this;
     if(!user.isModified('password')) return;
 
-    const salt =  randomBytes(16).toString()
-    const hashed =  createHmac('sha256', salt).update(user.password).digest('hex')
+    const salt =   randomBytes(16).toString()
+    const hashed =   createHmac('sha256', salt).update(user.password).digest('hex')
     this.salt = salt
     this.password = hashed
     next()

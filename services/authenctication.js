@@ -16,7 +16,6 @@ function createToken(user) {
 function validateToken(token){
     try {
         const payload = jwt.verify(token, secret);
-        console.log("payload from aurhentication",payload);
         return payload;
     } catch (error) {
         
