@@ -12,9 +12,6 @@ const blogSchema = new mongoose.Schema({
     coverImageUrl: {
         type: String,
     },
-    comments:{
-        
-    },
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: "User"

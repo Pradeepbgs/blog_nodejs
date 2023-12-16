@@ -45,6 +45,12 @@
        <% }) %>
     </div>
 
+    <div>
+        <form action="/delete/<%= blog._id %>" method="post">
+            <button type="submit">delete</button>
+        </form>
+    </div>
+
     <%- include('./partials/script') %>
 </body>
 </html>

@@ -54,7 +54,6 @@ router.get('/add-blog', (req, res)=>{
 
 router.post('/add-blog',upload.single('coverImage'), async(req, res, next)=>{
     const user = await User.findById(req.user._id)
-    console.log(user, "user")
     const blog = await Blog.create({
         title: req.body.title,
         body: req.body.body,
@@ -74,13 +73,33 @@ router.post('/add-blog',upload.single('coverImage'), async(req, res, next)=>{
 router.get('/blog/:id',async (req, res)=>{
     const blog = await Blog.findById(req.params.id).populate("createdBy")
     const comment = await commentModel.find({blogId: req.params.id}).populate("createdBy")
-  
     return res.render('blog',{
         blog,
         user : req.user,
         comment
     }) 
 })
+
+router.post('/delete/:id', async (req, res) => {
+    try {
+        const blog = await Blog.findByIdAndDelete(req.params.id).populate("createdBy");
+        const comment = await commentModel.deleteMany({blogId: req.params.id})
+
+        if (!blog) return res.status(404).send("Blog not found");
+        if(!comment) return res.status(404).json({res: "no comment found on this blog page"})
+
+        const user = await User.findById(blog.createdBy._id);
+        // Remove the deleted blog ID from the user's posts array
+        user.posts = user.posts.filter(post => post.toString() !== req.params.id);
+        await user.save();
+        res
+        return res.redirect('/');
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Internal Server Error");
+    }
+});
+
 
 router.post('/comment/:blogId', async function(req,res, next){
     await commentModel.create({
