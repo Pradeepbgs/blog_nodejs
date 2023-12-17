@@ -2,30 +2,28 @@
 <html lang="en">
 <head>
     <%- include('./partials/head') %>
-    <title>Home</title>
+    <title>Add Blog</title>
 </head>
 <body>
   <nav>
     <%- include('./partials/navbar') %> 
   </nav>
   
-  <div class="px-5">
+  <div class="container mt-4">
     <form action="/add-blog" method="post" enctype="multipart/form-data">
         <div class="mb-3">
-            <label for="exampleInputEmail1" class="form-label">Title</label>
+            <label for="title" class="form-label">Title</label>
             <input name='title' type="text" class="form-control" id="title" aria-describedby="title">
-          </div>
+        </div>
         <div class="mb-3">
-            <label for="exampleInputEmail1" class="form-label">File</label>
-            <input name='coverImage' type="file" class="fil" id="file" aria-describedby="file">
-          </div>
+            <label for="coverImage" class="form-label">Cover Image</label>
+            <input name='coverImage' type="file" class="form-control" id="coverImage">
+        </div>
         <div class="mb-3">
-            <label for="floatingTextarea2">Body</label>
-            <textarea class="form-control"name='body' 
-            id="floatingTextarea2" style="height: 100px"></textarea>
-           </textarea>         
-         </div>
-         <button type="submit" class="btn btn-primary">Submit</button>
+            <label for="body">Body</label>
+            <textarea class="form-control" name='body' id="body" style="height: 150px;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
 

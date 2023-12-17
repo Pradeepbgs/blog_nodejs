@@ -3,7 +3,6 @@ import User  from '../models/user.model.js'
 import {upload} from '../middleware/multer.middlewear.js'
 import Blog  from '../models/post.model.js'
 import commentModel from '../models/comment.model.js'
-import { checkForAuthenticationCookie } from '../middleware/auth.middleware.js'
 
 
 const router = express.Router()
@@ -39,12 +38,20 @@ router.get('/signup', (req, res) => {
 
 router.post('/signup', async (req, res) => {
     const {name, email, password} = req.body
-    await User.create({
-        name,
-        email,
-        password,
-    })
-    return res.redirect('/signin')
+
+    try {
+        const existedUser = await User.findOne({email})
+        if(existedUser) return res.render('signup', {error: "user already exists"})
+        await User.create({
+            name,
+            email,
+            password,
+        })
+        return res.redirect('/signin')
+    } catch (error) {
+        console.log("error while trying to register user")
+        return res.render('signup', {error: "error while trying to register user"})
+    }
 })
  
 router.get('/add-blog', (req, res)=>{
@@ -52,27 +59,32 @@ router.get('/add-blog', (req, res)=>{
     return res.render('addblog',{user})
 })
 
-router.post('/add-blog',upload.single('coverImage'), async(req, res, next)=>{
-    const user = await User.findById(req.user._id)
-    const blog = await Blog.create({
-        title: req.body.title,
-        body: req.body.body,
-        coverImageUrl: req.file.filename,
-        createdBy: user._id
-      });
-      user.posts.push(blog._id);
-      try {
+router.post('/add-blog', upload.single('coverImage'), async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        const blog = await Blog.create({
+            title: req.body.title,
+            body: req.body.body,
+            coverImageUrl: req.file.filename,
+            createdBy: user._id
+        });
+
+        user.posts.push(blog._id);
         await user.save();
-      } catch (error) {
-        console.log(error, 'user save error');
-      }
-      res.redirect(`/blog/${blog._id}`);
-      next()
-})
+
+        res.redirect(`/blog/${blog._id}`);
+    } catch (error) {
+        console.error('Error adding blog:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 
 router.get('/blog/:id',async (req, res)=>{
     const blog = await Blog.findById(req.params.id).populate("createdBy")
     const comment = await commentModel.find({blogId: req.params.id}).populate("createdBy")
+    // console.log(blog.createdBy._id, req.user._id)  
     return res.render('blog',{
         blog,
         user : req.user,
@@ -84,7 +96,7 @@ router.post('/delete/:id', async (req, res) => {
     try {
         const blog = await Blog.findByIdAndDelete(req.params.id).populate("createdBy");
         const comment = await commentModel.deleteMany({blogId: req.params.id})
-
+   
         if (!blog) return res.status(404).send("Blog not found");
         if(!comment) return res.status(404).json({res: "no comment found on this blog page"})
 
@@ -100,6 +112,30 @@ router.post('/delete/:id', async (req, res) => {
     }
 });
 
+router.get('/update/:id', async (req, res) => {
+    const blog = await Blog.findById(req.params.id)
+    return res.render('update',{blog})
+})
+ 
+router.post('/update/:id', upload.single('coverImage'), async (req, res) => {
+    try {
+        const blog = await Blog.findByIdAndUpdate(req.params.id, {
+            title: req.body.title,
+        })
+        if(req.body.body){
+            blog.body = req.body.body
+            await blog.save()
+        }
+        if(req.file){
+            blog.coverImageUrl = req.file.filename
+            await blog.save()
+        }
+        res.redirect(`/blog/${req.params.id}`)
+    } catch (error) {
+        console.error("error while trying to update db");
+        res.send(error)
+    }
+})
 
 router.post('/comment/:blogId', async function(req,res, next){
     await commentModel.create({

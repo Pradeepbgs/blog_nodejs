@@ -11,6 +11,9 @@
 
   <div class="px-5">
     <form action="/signup" method="post">
+      <div style="color: red;">
+        <p><%= locals.error %></p>
+      </div>
         <div class="mt-4 mb-3">
           <label for="exampleInputEmail1" class="form-label">Full Name</label>
           <input name="name" type="text" class="form-control" id="name" aria-describedby="name">
