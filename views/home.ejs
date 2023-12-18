@@ -15,7 +15,7 @@
         <% blog.forEach(blog => { %>
           <div class="col">
             <div class="card">
-              <img src="/images/<%= blog.coverImageUrl %>" class="card-img-top" alt="...">
+              <img src="<%= blog.coverImageUrl %>" class="card-img-top" alt="...">
               <div class="card-body">
                 <h5 class="card-title"><%= blog.title %></h5>
                 <p class="card-text" style="max-height: 80px; overflow: hidden;"><%= blog.body %></p>

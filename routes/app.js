@@ -3,6 +3,7 @@ import User  from '../models/user.model.js'
 import {upload} from '../middleware/multer.middlewear.js'
 import Blog  from '../models/post.model.js'
 import commentModel from '../models/comment.model.js'
+import {uploadOnCloudinary} from '../utils/cloudinary.js'
 
 
 const router = express.Router()
@@ -62,11 +63,11 @@ router.get('/add-blog', (req, res)=>{
 router.post('/add-blog', upload.single('coverImage'), async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
-
+        const imgPath = await uploadOnCloudinary(req.file.path);
         const blog = await Blog.create({
             title: req.body.title,
             body: req.body.body,
-            coverImageUrl: req.file.filename,
+            coverImageUrl: imgPath.url || "",
             createdBy: user._id
         });
 
@@ -82,14 +83,18 @@ router.post('/add-blog', upload.single('coverImage'), async (req, res) => {
 
 
 router.get('/blog/:id',async (req, res)=>{
-    const blog = await Blog.findById(req.params.id).populate("createdBy")
-    const comment = await commentModel.find({blogId: req.params.id}).populate("createdBy")
-    // console.log(blog.createdBy._id, req.user._id)  
-    return res.render('blog',{
-        blog,
-        user : req.user,
-        comment
-    }) 
+    try {
+        const blog = await Blog.findById(req.params.id).populate("createdBy")
+        const comment = await commentModel.find({blogId: req.params.id}).populate("createdBy")
+        return res.render('blog',{
+            blog,
+            user : req.user,
+            comment
+        }) 
+    } catch (error) {
+        console.error("error while loading blog page", error);
+        return res.status(500).send('Internal Server Error');
+    }
 })
 
 router.post('/delete/:id', async (req, res) => {
