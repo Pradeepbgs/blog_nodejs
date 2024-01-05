@@ -119,7 +119,7 @@ router.post('/delete/:id', async (req, res) => {
 
 router.get('/update/:id', async (req, res) => {
     const blog = await Blog.findById(req.params.id)
-    return res.render('update',{blog})
+    return res.render('update',{blog, user:req.user})
 })
  
 router.post('/update/:id', upload.single('coverImage'), async (req, res) => {
