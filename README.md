@@ -1,1 +1,1 @@
-this is just a simple blog apply
+this app has a bug 
